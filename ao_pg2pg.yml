@@ -1,0 +1,38 @@
+version: "1.0migrator"
+schemaVersion: v1
+app_id: postgres_service
+tiers:
+  - name: postgres
+    type: db
+    replicas: 2
+    containers:
+    - name: postgresql
+      image: jkshah/postgres
+      ports:
+        - containerPort: 5432
+          service: external
+          url:
+          - psqlsh://APPORBIT_SVC:APPORBIT_PORT
+      volumes:
+        - containerVolume: "/var/lib/postgresql"
+          min-size: 1G
+  - name: dbmigrator
+    type: app
+    replicas: 1
+    containers:
+    - name: pg2pg
+      image: jkshah/pg2pg
+      environment:
+      - POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: jkshah
+        SRC_POSTGRES_HOST: sourcepg.domain.com
+        SRC_POSTGRES_PORT: "5432"
+        SRC_POSTGRES_DB: srcdb
+        SRC_POSTGRES_USER: somepostgresuserofsrc
+        SRC_POSTGRES_PASSWORD: somepasswordofsrc
+      ports:
+      - containerPort: 5000
+        service: external
+        url:
+        - http://APPORBIT_SVC:APPORBIT_PORT
+
